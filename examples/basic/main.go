@@ -4,6 +4,8 @@ import (
 	"log"
 	"net"
 
+	"bufio"
+
 	mux "github.com/nimona/go-nimona-mux"
 )
 
@@ -13,7 +15,7 @@ func main() {
 	mpa, _ := mux.New(a)
 	mpb, _ := mux.New(b)
 
-	mes := []byte("Hello world")
+	mes := []byte("Hello world!\n")
 	go func() {
 		s, err := mpb.Accept()
 		if err != nil {
@@ -36,18 +38,18 @@ func main() {
 		log.Println(err)
 	}
 
-	buf := make([]byte, len(mes))
-	n, err := s.Read(buf)
+	r := bufio.NewReader(s)
+	line, _, err := r.ReadLine()
 	if err != nil {
 		log.Println(err)
 	}
 
-	if n != len(mes) {
-		log.Println("read wrong amount")
+	if len(line) != len(mes)-1 {
+		log.Println("read wrong amount", len(line), len(mes))
 	}
 
-	if string(buf) != string(mes) {
-		log.Println("got bad data")
+	if string(line)+"\n" != string(mes) {
+		log.Println("got bad data", string(line), string(mes))
 	}
 
 	s.Close()
